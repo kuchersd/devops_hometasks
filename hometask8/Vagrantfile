@@ -1,0 +1,21 @@
+
+Vagrant.configure("2") do |config|
+  config.vm.box = 'centos/7'
+  config.vm.network "private_network", ip: "192.168.56.55"
+  config.vm.network "forwarded_port", guest: 80, host: 8888
+  config.vm.network "forwarded_port", guest: 443, host: 8443
+  config.vm.provider "virtualbox" do | vb |
+    vb.name = "Jenk"
+    vb.memory = "2048"
+    vb.cpus = 2
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    yum update
+    yum install -y apache
+    mv /vagrant/index.html /home/vagrant/www-content
+    sudo yum install -y epel-release
+    sudo yum install -y certbot python2-certbot-apache mod_ssl
+    sudo certbot --apache -d localhost:8443
+    sudo certbot --apache
+  SHELL
+end
